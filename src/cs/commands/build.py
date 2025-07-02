@@ -211,6 +211,7 @@ def execute_step(step: dict, config: CSFConfig, output_json: bool) -> int:
     if config.project_root:
         os.chdir(config.project_root)
     
+    config_json_path = None
     try:
         # Validate inputs exist
         for pattern in step['inputs']:
@@ -223,13 +224,41 @@ def execute_step(step: dict, config: CSFConfig, output_json: bool) -> int:
         info(f"Executing: {command}", output_json)
         start_time = time.time()
         
-        result = subprocess.run(
-            command,
-            shell=True,
-            env=env,
-            capture_output=True,
-            text=True
-        )
+        # Check if the command is 'cstex-compile'
+        if command == "cstex-compile":
+            manifest = config.load_manifest()
+            if not manifest:
+                error("Could not load manifest from flake.nix", output_json, exit_code=1)
+                return 1
+            
+            csf_dir = config.project_root / ".csf"
+            csf_dir.mkdir(exist_ok=True)
+            config_json_path = csf_dir / "manifest.json"
+            import json
+            with open(config_json_path, 'w') as f:
+                json.dump(manifest, f)
+
+            # The main input file for cstex-compile is the first input of the step
+            main_input = step['inputs'][0]
+            
+            # Construct the command to execute the cstex-compile command from the environment
+            executable_command = ["cstex-compile", "--config", str(config_json_path), main_input]
+            
+            result = subprocess.run(
+                " ".join(executable_command),
+                shell=True,
+                env=env,
+                capture_output=True,
+                text=True
+            )
+        else:
+            result = subprocess.run(
+                command,
+                shell=True,
+                env=env,
+                capture_output=True,
+                text=True
+            )
         
         duration = time.time() - start_time
         
@@ -259,5 +288,8 @@ def execute_step(step: dict, config: CSFConfig, output_json: bool) -> int:
         return result.returncode
         
     finally:
+        # Clean up temporary manifest file
+        if config_json_path and os.path.exists(config_json_path):
+            os.remove(config_json_path)
         # Restore working directory
         os.chdir(original_cwd)

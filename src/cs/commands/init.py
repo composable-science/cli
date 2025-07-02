@@ -250,11 +250,42 @@ if __name__ == "__main__":
     
     with open(project_dir / "scripts" / "make_figures.py", 'w') as f:
         f.write(script_content)
+
+    # Create stats calculation script
+    stats_script_content = '''#!/usr/bin/env python3
+"""Calculate summary statistics"""
+
+import pandas as pd
+import json
+from pathlib import Path
+
+def main():
+    # Ensure outputs directory exists
+    Path("outputs").mkdir(exist_ok=True)
+    
+    # Load data
+    df = pd.read_csv("data/raw/experiments.csv")
+    
+    # Calculate stats
+    mean_temp = df['temperature'].mean()
+    
+    # Save to JSON
+    with open("outputs/stats.json", 'w') as f:
+        json.dump({"mean_temperature": mean_temp}, f, indent=2)
+        
+    print("Calculated summary statistics and saved to outputs/stats.json")
+
+if __name__ == "__main__":
+    main()
+'''
+    with open(project_dir / "scripts" / "calculate_stats.py", 'w') as f:
+        f.write(stats_script_content)
     
     # Create minimal LaTeX paper
     latex_content = r'''\documentclass{article}
 \usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{../templates/composable}
 
 \title{CSF Paper Template}
 \author{Your Name}
@@ -268,6 +299,8 @@ if __name__ == "__main__":
 
 This is a sample paper created with the Composable Science Framework.
 All computational steps are reproducible and verifiable.
+
+The mean temperature was \csfvaluelink{mean_temp}{float,round2} C.
 
 \section{Results}
 
@@ -396,11 +429,25 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               buildInputs = [ pkgs.python311Packages.matplotlib pkgs.python311Packages.pandas ];
             }
             {
+              name = "stats";
+              cmd = "python3 scripts/calculate_stats.py";
+              inputs = [ "data/raw/experiments.csv" "scripts/calculate_stats.py" ];
+              outputs = [ "outputs/stats.json" ];
+              buildInputs = [ pkgs.python311Packages.pandas ];
+            }
+            {
               name = "paper";
-              cmd = "latexmk -pdf paper.tex";
-              inputs = [ "paper.tex" "figures/temperature_measurement.png" "figures/measurement_distribution.png" ];
+              cmd = "cstex-compile";
+              inputs = [ "paper.tex" "figures/temperature_measurement.png" "figures/measurement_distribution.png" "outputs/stats.json" ];
               outputs = [ "paper.pdf" ];
-              buildInputs = [ texMini.packages.${system}.texMiniBiblio ];
+              buildInputs = [ cstex.packages.${system}.cstex-compile ];
+            }
+          ];
+          values = [
+            {
+              name = "mean_temp";
+              file = "outputs/stats.json";
+              query = ".mean_temperature";
             }
           ];
         """,
@@ -449,10 +496,6 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
         """
     }
 
-    # This placeholder will be replaced with the actual GitHub URL
-    import os
-    cs_flake_url = f"path:{os.path.abspath(project_dir.parent / 'core')}"
-
     flake_template = f"""
 {{
   description = "A Composable Science Project: {project_name}";
@@ -460,11 +503,11 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
   inputs = {{
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    cs.url = "{cs_flake_url}";
-    texMini.url = "github:composable-science/texMini";
+    cs.url = "github:composable-science/cli";
+    cstex.url = "github:composable-science/cstex";
   }};
 
-  outputs = {{ self, nixpkgs, flake-utils, cs, texMini }}:
+  outputs = {{ self, nixpkgs, flake-utils, cs, cstex }}:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {{ inherit system; }};
@@ -488,7 +531,8 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
         # The dev shell includes the 'cs' command and all pipeline dependencies
         devShells.default = pkgs.mkShell {{
           buildInputs = [
-            cs.packages.${{system}}.default
+            cs.packages.${{system}}.cs
+            cstex.packages.${{system}}.cstex-compile
           ] ++ pipeline-dependencies;
 
           shellHook = ''
