@@ -45,7 +45,7 @@
     },
     "paper": {
       "name": "paper",
-      "cmd": "latexmk -pdf paper.tex",
+      "cmd": "nix run github:composable-science/texMini -- paper.tex",
       "inputs": [
         "paper.tex",
         "figures/*.png"
