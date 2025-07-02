@@ -220,17 +220,12 @@ def execute_step(step: dict, config: CSFConfig, output_json: bool) -> int:
                 return 69
         
         # Execute command
-        # Construct the command to run inside a Nix shell with step-specific dependencies
-        build_packages = step.get('buildPackages', [])
-        
-        # The base command to execute, wrapped in `nix shell`
-        nix_command = ['nix', 'shell'] + build_packages + ['--command', 'bash', '-c', command]
-        
-        info(f"Executing in Nix shell: {' '.join(nix_command)}", output_json)
+        info(f"Executing: {command}", output_json)
         start_time = time.time()
         
         result = subprocess.run(
-            nix_command,
+            command,
+            shell=True,
             env=env,
             capture_output=True,
             text=True

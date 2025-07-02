@@ -56,7 +56,8 @@ def init_command(ctx, template, name):
     try:
         subprocess.run(["git", "init", "-b", "main"], cwd=current_dir, check=True, capture_output=True, text=True)
         subprocess.run(["git", "add", "."], cwd=current_dir, check=True, capture_output=True, text=True)
-        info("Initialized git repository.", output_json)
+        subprocess.run(["git", "commit", "--no-gpg-sign", "-m", "Initial commit"], cwd=current_dir, check=True, capture_output=True, text=True)
+        info("Initialized and committed git repository.", output_json)
     except (subprocess.CalledProcessError, FileNotFoundError):
         info("Could not initialize git repository (is git installed?).", output_json)
     
@@ -386,23 +387,20 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "scripts/generate_sample_data.py" ];
               outputs = [ "data/raw/experiments.csv" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
-              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             }
             {
               name = "figures";
               cmd = "python3 scripts/make_figures.py";
               inputs = [ "data/raw/experiments.csv" "scripts/make_figures.py" ];
               outputs = [ "figures/temperature_measurement.png" "figures/measurement_distribution.png" ];
-              buildInputs = [ pkgs.python311Packages.matplotlib ];
-              buildPackages = [ "nixpkgs#python311Packages.matplotlib" "nixpkgs#python311Packages.pandas" ];
+              buildInputs = [ pkgs.python311Packages.matplotlib pkgs.python311Packages.pandas ];
             }
             {
               name = "paper";
               cmd = "latexmk -pdf paper.tex";
               inputs = [ "paper.tex" "figures/temperature_measurement.png" "figures/measurement_distribution.png" ];
               outputs = [ "paper.pdf" ];
-              buildInputs = [ pkgs.texlive.combined.scheme-small ];
-              buildPackages = [ "nixpkgs#texlive.combined.scheme-small" ];
+              buildInputs = [ texMini.packages.${system}.texMiniBiblio ];
             }
           ];
         """,
@@ -414,7 +412,6 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "scripts/download_data.py" ];
               outputs = [ "data/raw/dataset.csv" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
-              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             },
             {
               name = "clean";
@@ -422,7 +419,6 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "data/raw/dataset.csv" "scripts/clean_data.py" ];
               outputs = [ "data/clean/dataset.csv" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
-              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             },
             {
               name = "analyze";
@@ -430,7 +426,6 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "data/clean/dataset.csv" "scripts/analyze.py" ];
               outputs = [ "results/summary.json" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
-              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             }
           ];
         """,
@@ -442,7 +437,6 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "src/**/*.py" "setup.py" ];
               outputs = [ "dist/*.whl" ];
               buildInputs = [ pkgs.python311Packages.setuptools pkgs.python311Packages.wheel ];
-              buildPackages = [ "nixpkgs#python311Packages.setuptools" "nixpkgs#python311Packages.wheel" ];
             },
             {
               name = "test";
@@ -450,14 +444,14 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "src/**/*.py" "tests/**/*.py" ];
               outputs = [ ]; # No outputs, just run tests
               buildInputs = [ pkgs.python311Packages.pytest ];
-              buildPackages = [ "nixpkgs#python311Packages.pytest" ];
             }
           ];
         """
     }
 
     # This placeholder will be replaced with the actual GitHub URL
-    cs_flake_url = "github:composable-science/cli"
+    import os
+    cs_flake_url = f"path:{os.path.abspath(project_dir.parent / 'core')}"
 
     flake_template = f"""
 {{
@@ -467,9 +461,10 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     cs.url = "{cs_flake_url}";
+    texMini.url = "github:composable-science/texMini";
   }};
 
-  outputs = {{ self, nixpkgs, flake-utils, cs }}:
+  outputs = {{ self, nixpkgs, flake-utils, cs, texMini }}:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {{ inherit system; }};
@@ -483,7 +478,7 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
         }};
 
         # Combine all buildInputs from the pipeline steps
-        pipeline-dependencies = builtins.concatMap (step: step.buildInputs or []) cs-pipeline.pipeline;
+        pipeline-dependencies = pkgs.lib.lists.unique (builtins.concatMap (step: step.buildInputs or []) cs-pipeline.pipeline);
 
       in
       {{
