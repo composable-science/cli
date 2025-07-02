@@ -52,7 +52,7 @@ def build_command(ctx, step, force):
         return
     
     # Create outputs directory
-    config.outputs_dir.mkdir(exist_ok=True)
+    config.outputs_dir.mkdir(parents=True, exist_ok=True)
     
     # Execute steps
     for step_config in steps_to_build:
@@ -220,12 +220,17 @@ def execute_step(step: dict, config: CSFConfig, output_json: bool) -> int:
                 return 69
         
         # Execute command
-        info(f"Executing: {command}", output_json)
+        # Construct the command to run inside a Nix shell with step-specific dependencies
+        build_packages = step.get('buildPackages', [])
+        
+        # The base command to execute, wrapped in `nix shell`
+        nix_command = ['nix', 'shell'] + build_packages + ['--command', 'bash', '-c', command]
+        
+        info(f"Executing in Nix shell: {' '.join(nix_command)}", output_json)
         start_time = time.time()
         
         result = subprocess.run(
-            command,
-            shell=True,
+            nix_command,
             env=env,
             capture_output=True,
             text=True

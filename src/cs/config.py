@@ -42,15 +42,36 @@ class CSFConfig:
         if not self.has_manifest():
             return None
         try:
-            # Use `nix eval` to extract the configuration
+            # Get the current system's identifier from `nix show-config`
+            system_result = subprocess.run(
+                ['nix', 'show-config', '--json'],
+                capture_output=True, text=True, check=True
+            )
+            nix_config = json.loads(system_result.stdout)
+            current_system = nix_config.get('system', {}).get('value')
+
+            if not current_system:
+                error("Could not determine current system from `nix show-config`.")
+                return None
+
+            # Use `nix eval` to extract the configuration for all systems
             result = subprocess.run(
-                ['nix', 'eval', '.#csConfig', '--json'],
+                ['nix', 'eval', '--impure', '--no-write-lock-file', '.#csConfig', '--json'],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
                 check=True
             )
-            return json.loads(result.stdout)
+            all_configs = json.loads(result.stdout)
+
+            # The output of `nix eval` on a flake-utils `eachDefaultSystem` output
+            # is a mapping from system identifiers to the actual flake output.
+            if current_system in all_configs:
+                return all_configs[current_system]
+            else:
+                error(f"Configuration for current system '{current_system}' not found in flake.nix.")
+                return None
+
         except subprocess.CalledProcessError as e:
             error(f"Error evaluating flake.nix: {e.stderr}")
             return None

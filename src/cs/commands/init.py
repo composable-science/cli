@@ -4,6 +4,7 @@ import click
 from pathlib import Path
 import shutil
 import toml
+import subprocess
 from cs.utils.output import success, error, info
 from cs.config import CSFConfig
 
@@ -50,6 +51,14 @@ def init_command(ctx, template, name):
     
     # Create flake.nix with embedded pipeline configuration
     create_flake_nix(current_dir, template, project_name)
+
+    # Initialize git repository
+    try:
+        subprocess.run(["git", "init", "-b", "main"], cwd=current_dir, check=True, capture_output=True, text=True)
+        subprocess.run(["git", "add", "."], cwd=current_dir, check=True, capture_output=True, text=True)
+        info("Initialized git repository.", output_json)
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        info("Could not initialize git repository (is git installed?).", output_json)
     
     success(f"Created {template} project in {current_dir}", output_json)
     info("Next steps:", output_json)
@@ -373,17 +382,19 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
           pipeline = [
             {
               name = "data";
-              cmd = "python scripts/generate_sample_data.py";
+              cmd = "python3 scripts/generate_sample_data.py";
               inputs = [ "scripts/generate_sample_data.py" ];
               outputs = [ "data/raw/experiments.csv" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
+              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             }
             {
               name = "figures";
-              cmd = "python scripts/make_figures.py";
+              cmd = "python3 scripts/make_figures.py";
               inputs = [ "data/raw/experiments.csv" "scripts/make_figures.py" ];
               outputs = [ "figures/temperature_measurement.png" "figures/measurement_distribution.png" ];
               buildInputs = [ pkgs.python311Packages.matplotlib ];
+              buildPackages = [ "nixpkgs#python311Packages.matplotlib" "nixpkgs#python311Packages.pandas" ];
             }
             {
               name = "paper";
@@ -391,6 +402,7 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
               inputs = [ "paper.tex" "figures/temperature_measurement.png" "figures/measurement_distribution.png" ];
               outputs = [ "paper.pdf" ];
               buildInputs = [ pkgs.texlive.combined.scheme-small ];
+              buildPackages = [ "nixpkgs#texlive.combined.scheme-small" ];
             }
           ];
         """,
@@ -398,24 +410,27 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
           pipeline = [
             {
               name = "download";
-              cmd = "python scripts/download_data.py";
+              cmd = "python3 scripts/download_data.py";
               inputs = [ "scripts/download_data.py" ];
               outputs = [ "data/raw/dataset.csv" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
+              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             },
             {
               name = "clean";
-              cmd = "python scripts/clean_data.py";
+              cmd = "python3 scripts/clean_data.py";
               inputs = [ "data/raw/dataset.csv" "scripts/clean_data.py" ];
               outputs = [ "data/clean/dataset.csv" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
+              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             },
             {
               name = "analyze";
-              cmd = "python scripts/analyze.py";
+              cmd = "python3 scripts/analyze.py";
               inputs = [ "data/clean/dataset.csv" "scripts/analyze.py" ];
               outputs = [ "results/summary.json" ];
               buildInputs = [ pkgs.python311Packages.pandas ];
+              buildPackages = [ "nixpkgs#python311Packages.pandas" ];
             }
           ];
         """,
@@ -423,24 +438,26 @@ def create_flake_nix(project_dir: Path, template: str, project_name: str):
           pipeline = [
             {
               name = "build";
-              cmd = "python setup.py bdist_wheel";
+              cmd = "python3 setup.py bdist_wheel";
               inputs = [ "src/**/*.py" "setup.py" ];
               outputs = [ "dist/*.whl" ];
-              buildInputs = [ pkgs.python311Packages.setuptools, pkgs.python311Packages.wheel ];
+              buildInputs = [ pkgs.python311Packages.setuptools pkgs.python311Packages.wheel ];
+              buildPackages = [ "nixpkgs#python311Packages.setuptools" "nixpkgs#python311Packages.wheel" ];
             },
             {
               name = "test";
-              cmd = "pytest";
+              cmd = "python3 -m pytest";
               inputs = [ "src/**/*.py" "tests/**/*.py" ];
               outputs = [ ]; # No outputs, just run tests
               buildInputs = [ pkgs.python311Packages.pytest ];
+              buildPackages = [ "nixpkgs#python311Packages.pytest" ];
             }
           ];
         """
     }
 
     # This placeholder will be replaced with the actual GitHub URL
-    cs_flake_url = "path:.."
+    cs_flake_url = "github:composable-science/cli"
 
     flake_template = f"""
 {{

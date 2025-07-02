@@ -57,7 +57,7 @@ def doctor_command(ctx):
         "✅ Found" if has_manifest else "❌ Missing (run 'cs init')"
     ]]
     if not has_manifest:
-        issues_found.append("No composable.toml found. Run 'cs init <template>' to create a project.")
+        issues_found.append("No flake.nix found. Run 'cs init <template>' to create a project.")
         checks = python_checks + manifest_checks
         return display_results(checks, warnings_found, issues_found, output_json)
 
@@ -66,11 +66,11 @@ def doctor_command(ctx):
     manifest_valid = manifest is not None
     manifest_checks.append([
         "Manifest Valid",
-        "composable.toml",
+        "flake.nix",
         "✅ Valid" if manifest_valid else "❌ Invalid TOML"
     ])
     if not manifest_valid:
-        issues_found.append("composable.toml contains invalid TOML syntax.")
+        issues_found.append("flake.nix contains invalid syntax.")
         checks = python_checks + manifest_checks
         return display_results(checks, warnings_found, issues_found, output_json)
 
@@ -119,7 +119,7 @@ def doctor_command(ctx):
             "No pipeline defined",
             "⚠️ Empty"
         ])
-        warnings_found.append("No pipeline steps defined in composable.toml")
+        warnings_found.append("No pipeline steps defined in flake.nix")
         if manifest_valid:
             has_package = 'package' in manifest
             has_pipeline = 'pipeline' in manifest and len(manifest['pipeline']) > 0
