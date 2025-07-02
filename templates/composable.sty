@@ -1,0 +1,322 @@
+% composable.sty - Composable Science Framework LaTeX Package
+% Version: 2025-07-01
+%
+% This package enables CSF artifact linking in LaTeX documents with both
+% automatic discovery and declarative annotation support.
+%
+% Features:
+% - Automatic artifact discovery and linking
+% - Declarative CSF annotations with runtime value injection
+% - Plain LaTeX compatibility through fallback commands
+% - Statistical output formatting and linking
+
+\ProvidesPackage{composable}[2025/07/01 Composable Science Framework - Declarative Support]
+
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage{url}
+\RequirePackage{hyperref}
+\RequirePackage{xparse}
+\RequirePackage{xkeyval}
+\RequirePackage{ifthen}
+\RequirePackage{pgfkeys}
+% \RequirePackage{pdfcomment} % Removed for texMini compatibility
+
+% Initialize CSF configuration with defaults
+\def\csfprojectid{unknown}
+\def\csfbaseurl{https://dashboard.composable-science.org}
+\def\csfcommit{unknown}
+
+% Try to read project configuration if it exists
+\IfFileExists{.csf/config.tex}{%
+    \input{.csf/config.tex}%
+}{%
+    \PackageWarning{composable}{No .csf/config.tex found. Run 'cs build' to generate CSF configuration.}%
+}
+
+% CSF Declarative Support - Value Injection System
+% ================================================
+
+% Initialize value store for runtime injection
+\newif\ifcsfvaluescached
+\csfvaluescachedfalse
+
+% Value Definition Commands for Runtime Injection
+% ===============================================
+
+% Define a statistical value for injection
+\newcommand{\csfdefinevalue}[4]{%
+    % #1 = value name, #2 = value, #3 = step name, #4 = type
+    \expandafter\def\csname csfvalue@#1\endcsname{#2}%
+    \expandafter\def\csname csfstep@#1\endcsname{#3}%
+    \expandafter\def\csname csftype@#1\endcsname{#4}%
+}
+
+% Try to read cached values if they exist
+\IfFileExists{.csf/values.tex}{%
+    \input{.csf/values.tex}%
+    \csfvaluescachedtrue
+}{%
+    \PackageInfo{composable}{No .csf/values.tex found. Values will use fallback format specifiers.}%
+}
+
+% Fallback Commands for Plain LaTeX Compatibility
+% ===============================================
+% These commands provide graceful fallbacks when using plain LaTeX compilers
+
+% Statistical value linking with format fallback
+% --- NEW UNIFIED COMMANDS ---
+
+% For any named value. In plain LaTeX, it shows the format specifier.
+% In CSTeX, it injects the computed value and a provenance link.
+\providecommand{\csfvaluelink}[2]{%
+    \ifcsfvaluescached
+        \csf@getvalue{#1}{#2}%
+        \space\csfgeneratestatlink{#1}{\csf@getstep{#1}}%
+    \else
+        #2%
+    \fi
+}
+
+% For any file-based artifact. Invisible in plain LaTeX.
+% In CSTeX, it generates a provenance link.
+\providecommand{\csflink}[1]{%
+    \ifcsfvaluescached
+        \space\csfgeneratelink{#1}{artifact}%
+    \else
+        % Invisible
+    \fi
+}
+
+% Define keys for \csfigure command
+\define@key{csfigure}{caption}{\def\csf@caption{#1}}
+\define@key{csfigure}{label}{\def\csf@label{#1}}
+\define@key{csfigure}{step}{\def\csf@step{#1}}
+\define@key{csfigure}{script}{\def\csf@script{#1}}
+\define@key{csfigure}{line}{\def\csf@line{#1}}
+\define@key{csfigure}{width}{\def\csf@width{#1}}
+\define@key{csfigure}{placement}{\def\csf@placement{#1}}
+
+% Set defaults
+\def\csf@caption{CSF Figure}
+\def\csf@label{}
+\def\csf@step{unknown}
+\def\csf@script{unknown}
+\def\csf@line{unknown}
+\def\csf@width{0.8\textwidth}
+\def\csf@placement{htbp}
+
+% Enhanced figure command with CSF linking
+\NewDocumentCommand{\csfigure}{m +m}{%
+    % Parse arguments: #1 = image path, #2 = key-value options
+    \setkeys{csfigure}{#2}%
+    %
+    \begin{figure}[\csf@placement]
+        \centering
+        \includegraphics[width=\csf@width]{#1}
+        \caption{\csf@caption\space\csflink{#1}}
+        \ifx\csf@label\empty\else\label{\csf@label}\fi
+        %
+        % Embed invisible metadata for extraction tools
+        \CSFMetadata{%
+            artifact={#1},%
+            step={\csf@step},%
+            script={\csf@script},%
+            line={\csf@line},%
+            project_id={\csfprojectid}%
+        }%
+    \end{figure}%
+}
+
+% Generate dashboard link
+\renewcommand{\csflink}[1]{%
+    \href{\csfbaseurl/project/\csfprojectid/artifact/#1}{%
+        \textcolor{blue}{\small [link]}%
+    }%
+}
+
+% Invisible metadata command for tools to extract
+\newcommand{\CSFMetadata}[1]{%
+    \ifcsname pdfliteral\endcsname
+        % pdfTeX
+        \pdfliteral{%
+            % CSF-METADATA: #1
+        }%
+    \else
+        % Other engines - use a comment
+        \special{CSF-METADATA: #1}%
+    \fi
+}
+
+% Enhanced backward compatibility - \includegraphics with intelligent CSF linking
+\let\original@includegraphics\includegraphics
+
+\RenewDocumentCommand{\includegraphics}{o m}{%
+    \IfNoValueTF{#1}{%
+        \original@includegraphics{#2}%
+    }{%
+        \original@includegraphics[#1]{#2}%
+    }%
+}
+
+% Enhanced auto-link helper for generated figures
+\newcommand{\csfautolink}[1]{%
+    % Always generate link for any artifact when explicitly called
+    \space\csfgeneratelink{#1}{figure}%
+}
+
+% Value Injection System - Core Implementation
+% ============================================
+
+% Value storage and retrieval functions
+\newcommand{\csf@getvalue}[2]{%
+    % #1 = value name, #2 = format specifier
+    \@ifundefined{csfvalue@#1}{%
+        #2% Fallback to format specifier if value not found
+    }{%
+        \csf@formatvalue{\csname csfvalue@#1\endcsname}{#2}%
+    }%
+}
+
+% Get step name for a value
+\newcommand{\csf@getstep}[1]{%
+    \@ifundefined{csfstep@#1}{%
+        auto% Default step name
+    }{%
+        \csname csfstep@#1\endcsname%
+    }%
+}
+
+% Format value according to format specifier
+\newcommand{\csf@formatvalue}[2]{%
+    % #1 = raw value, #2 = format specifier
+    \def\csf@temp{#2}%
+    \ifthenelse{\equal{\csf@temp}{float,round1}}{%
+        \csf@formatfloat{#1}{1}%
+    }{%
+        \ifthenelse{\equal{\csf@temp}{float,round2}}{%
+            \csf@formatfloat{#1}{2}%
+        }{%
+            \ifthenelse{\equal{\csf@temp}{float,round3}}{%
+                \csf@formatfloat{#1}{3}%
+            }{%
+                \ifthenelse{\equal{\csf@temp}{percent,round1}}{%
+                    \csf@formatpercent{#1}{1}%
+                }{%
+                    \ifthenelse{\equal{\csf@temp}{percent,round2}}{%
+                        \csf@formatpercent{#1}{2}%
+                    }{%
+                        \ifthenelse{\equal{\csf@temp}{scientific,round3}}{%
+                            \csf@formatscientific{#1}{3}%
+                        }{%
+                            \ifthenelse{\equal{\csf@temp}{int}}{%
+                                \csf@formatint{#1}%
+                            }{%
+                                #1% Default: show raw value
+                            }%
+                        }%
+                    }%
+                }%
+            }%
+        }%
+    }%
+}
+
+% Formatting helper functions (simplified for LaTeX)
+\newcommand{\csf@formatfloat}[2]{#1} % Would need decimal formatting
+\newcommand{\csf@formatpercent}[2]{#1\%} % Would need percentage conversion
+\newcommand{\csf@formatscientific}[2]{#1} % Would need scientific notation
+\newcommand{\csf@formatint}[1]{#1} % Would need integer truncation
+
+% Enhanced CSTeX Commands - Override fallbacks when values are cached
+% ===================================================================
+
+% Enhanced statistical value linking with runtime injection
+% The new \csfvaluelink and \csflink commands already contain the logic
+% for both cached and non-cached scenarios, so the explicit \ifcsfvaluescached
+% blocks for each command are no longer needed here. The primary definitions
+% above handle both cases gracefully.
+
+% Generate CSF provenance link with hover-text
+\newcommand{\csfgeneratelink}[2]{%
+    % #1 = artifact path, #2 = metadata text
+    % pdfcomment removed for texMini compatibility
+}
+
+% Generate statistical link with hover-text
+\newcommand{\csfgeneratestatlink}[2]{%
+    % #1 = value name, #2 = metadata text
+    % pdfcomment removed for texMini compatibility
+}
+
+% Utility to check if string contains substring
+\makeatletter
+\newcommand{\IfSubStr}[2]{%
+    \def\@temp{#2}%
+    \expandafter\@IfSubStr\expandafter{\@temp}{#1}%
+}
+\newcommand{\@IfSubStr}[2]{%
+    \begingroup
+    \edef\@tempa{#1}%
+    \edef\@tempb{#2}%
+    \expandafter\expandafter\expandafter\@@@IfSubStr
+    \expandafter\expandafter\expandafter{\expandafter\@tempb\expandafter}\expandafter{\@tempa}%
+}
+\newcommand{\@@@IfSubStr}[2]{%
+    \in@{#2}{#1}%
+    \endgroup
+    \ifin@
+        \expandafter\@firstoftwo
+    \else
+        \expandafter\@secondoftwo
+    \fi
+}
+\makeatother
+
+% Configuration commands
+\newcommand{\csfsetproject}[1]{\def\csfprojectid{#1}}
+\newcommand{\csfseturl}[1]{\def\csfbaseurl{#1}}
+\newcommand{\csfsetcommit}[1]{\def\csfcommit{#1}}
+
+% Information commands
+\newcommand{\csfprojectinfo}{%
+    Project ID: \texttt{\csfprojectid}\\%
+    Dashboard: \url{\csfbaseurl}\\%
+    Commit: \texttt{\csfcommit}%
+}
+
+
+% Bulk value loading helper
+\newcommand{\csfloadvalues}[1]{%
+    % Load values from external file
+    \InputIfFileExists{#1}{}{\PackageWarning{composable}{Could not load values file: #1}}%
+}
+
+% CSF Annotation Processing Helpers
+% =================================
+
+% Mark CSF annotations for processing (invisible in output)
+\newcommand{\csfannotation}[1]{%
+    % #1 = annotation content (will be processed by metadata tools)
+    % Invisible in final output, used by preprocessing tools
+}
+
+% Enhanced linking with automatic step detection
+\newcommand{\csflinkenhanced}[2]{%
+    % #1 = artifact path, #2 = type hint
+    \space\csfgeneratelink{#1}{#2}%
+}
+
+% Debug commands for value inspection
+\newcommand{\csfdebugvalue}[1]{%
+    % Show raw value and metadata for debugging
+    \texttt{[DEBUG: #1 = \csname csfvalue@#1\endcsname\space from \csname csfstep@#1\endcsname]}%
+}
+
+% Enable auto-linking by default
+\def\csfautolink{}
+
+% Package information
+\PackageInfo{composable}{CSF Declarative Annotation System loaded successfully}
+
+\endinput

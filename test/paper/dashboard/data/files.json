@@ -1,0 +1,153 @@
+[
+  {
+    "name": "dashboard",
+    "type": "directory",
+    "children": [
+      {
+        "name": "data",
+        "type": "directory",
+        "children": [
+          {
+            "name": "attestation.json",
+            "type": "file",
+            "size": 5831
+          },
+          {
+            "name": "files.json",
+            "type": "file",
+            "size": 2563
+          },
+          {
+            "name": "pipeline.json",
+            "type": "file",
+            "size": 1018
+          }
+        ]
+      },
+      {
+        "name": "index.html",
+        "type": "file",
+        "size": 27129
+      },
+      {
+        "name": "pipeline.mmd",
+        "type": "file",
+        "size": 888
+      }
+    ]
+  },
+  {
+    "name": "data",
+    "type": "directory",
+    "children": [
+      {
+        "name": "raw",
+        "type": "directory",
+        "children": [
+          {
+            "name": "experiments.csv",
+            "type": "file",
+            "size": 5879
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "docs",
+    "type": "directory",
+    "children": []
+  },
+  {
+    "name": "figures",
+    "type": "directory",
+    "children": [
+      {
+        "name": "measurement_distribution.png",
+        "type": "file",
+        "size": 70848
+      },
+      {
+        "name": "temperature_measurement.png",
+        "type": "file",
+        "size": 160206
+      }
+    ]
+  },
+  {
+    "name": "outputs",
+    "type": "directory",
+    "children": []
+  },
+  {
+    "name": "scripts",
+    "type": "directory",
+    "children": [
+      {
+        "name": "generate_sample_data.py",
+        "type": "file",
+        "size": 832
+      },
+      {
+        "name": "make_figures.py",
+        "type": "file",
+        "size": 1406
+      }
+    ]
+  },
+  {
+    "name": "attestation.json",
+    "type": "file",
+    "size": 1405
+  },
+  {
+    "name": "composable.toml",
+    "type": "file",
+    "size": 1078
+  },
+  {
+    "name": "flake.lock",
+    "type": "file",
+    "size": 3369
+  },
+  {
+    "name": "flake.nix",
+    "type": "file",
+    "size": 2230
+  },
+  {
+    "name": "paper.aux",
+    "type": "file",
+    "size": 504
+  },
+  {
+    "name": "paper.fdb_latexmk",
+    "type": "file",
+    "size": 7635
+  },
+  {
+    "name": "paper.fls",
+    "type": "file",
+    "size": 9272
+  },
+  {
+    "name": "paper.log",
+    "type": "file",
+    "size": 10213
+  },
+  {
+    "name": "paper.pdf",
+    "type": "file",
+    "size": 160931
+  },
+  {
+    "name": "paper.tex",
+    "type": "file",
+    "size": 3211
+  },
+  {
+    "name": "pipeline_attestation.json",
+    "type": "file",
+    "size": 5831
+  }
+]

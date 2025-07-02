@@ -1,0 +1,18 @@
+# CSF build outputs
+outputs/
+.nix-*
+result*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db

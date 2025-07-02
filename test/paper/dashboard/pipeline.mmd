@@ -1,0 +1,30 @@
+graph TD
+    step_0["data\npython3 scripts/generate_..."]
+    step_1["figures\npython3 scripts/make_figu..."]
+    step_2["paper\ncstex-compile paper.tex"]
+    file_0([data/raw/*.csv])
+    step_0 --> file_0
+    file_0 --> step_1
+    file_1([figures/*.png])
+    step_1 --> file_1
+    file_1 --> step_2
+    file_2([paper.pdf])
+    step_2 --> file_2
+    file_3([paper.tex])
+    file_3 --> step_2
+    file_4([scripts/generate_sample_data.py])
+    file_4 --> step_0
+    file_5([scripts/make_figures.py])
+    file_5 --> step_1
+
+    classDef stepNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef fileNode fill:#f3e5f5,stroke:#4a148c,stroke-width:1px
+    class step_0 stepNode
+    class step_1 stepNode
+    class step_2 stepNode
+    class file_0 fileNode
+    class file_1 fileNode
+    class file_2 fileNode
+    class file_3 fileNode
+    class file_4 fileNode
+    class file_5 fileNode

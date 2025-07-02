@@ -1,0 +1,48 @@
+{
+  "steps": [
+    {
+      "name": "data",
+      "flake": "github:composable-science/python-sci",
+      "cmd": "python3 scripts/generate_sample_data.py",
+      "inputs": [
+        "scripts/generate_sample_data.py"
+      ],
+      "outputs": [
+        "data/raw/*.csv"
+      ]
+    },
+    {
+      "name": "figures",
+      "flake": "github:composable-science/python-sci",
+      "cmd": "python3 scripts/make_figures.py",
+      "inputs": [
+        "data/raw/*.csv",
+        "scripts/make_figures.py"
+      ],
+      "outputs": [
+        "figures/*.png"
+      ]
+    },
+    {
+      "name": "paper",
+      "flake": "github:composable-science/cstex#compile",
+      "cmd": "cstex-compile paper.tex",
+      "inputs": [
+        "paper.tex",
+        "figures/*.png"
+      ],
+      "outputs": [
+        "paper.pdf"
+      ]
+    }
+  ],
+  "package": {
+    "name": "paper",
+    "version": "0.0.1",
+    "license": "MIT",
+    "authors": [
+      "TODO: Add your name <email@example.org>"
+    ]
+  },
+  "generated_at": "2025-07-01T00:00:00Z"
+}

@@ -1,0 +1,151 @@
+% composable.sty - Composable Science Framework LaTeX Package
+% Version: 2025-07-01
+% 
+% This package enables CSF artifact linking in LaTeX documents,
+% allowing figures to embed live links back to their computational provenance.
+
+\ProvidesPackage{composable}[2025/07/01 Composable Science Framework]
+
+\RequirePackage{graphicx}
+\RequirePackage{xcolor}
+\RequirePackage{url}
+\RequirePackage{hyperref}
+\RequirePackage{xparse}
+\RequirePackage{xkeyval}
+
+% Initialize CSF configuration with defaults
+\def\csfprojectid{unknown}
+\def\csfbaseurl{https://dashboard.composable-science.org}
+\def\csfcommit{unknown}
+
+% Try to read project configuration if it exists
+\IfFileExists{.csf/config.tex}{%
+    \input{.csf/config.tex}%
+}{%
+    \PackageWarning{composable}{No .csf/config.tex found. Run 'cs build' to generate CSF configuration.}%
+}
+
+% Define keys for \csfigure command
+\define@key{csfigure}{caption}{\def\csf@caption{#1}}
+\define@key{csfigure}{label}{\def\csf@label{#1}}
+\define@key{csfigure}{step}{\def\csf@step{#1}}
+\define@key{csfigure}{script}{\def\csf@script{#1}}
+\define@key{csfigure}{line}{\def\csf@line{#1}}
+\define@key{csfigure}{width}{\def\csf@width{#1}}
+\define@key{csfigure}{placement}{\def\csf@placement{#1}}
+
+% Set defaults
+\def\csf@caption{CSF Figure}
+\def\csf@label{}
+\def\csf@step{unknown}
+\def\csf@script{unknown}
+\def\csf@line{unknown}
+\def\csf@width{0.8\textwidth}
+\def\csf@placement{htbp}
+
+% Enhanced figure command with CSF linking
+\NewDocumentCommand{\csfigure}{m +m}{%
+    % Parse arguments: #1 = image path, #2 = key-value options
+    \setkeys{csfigure}{#2}%
+    %
+    \begin{figure}[\csf@placement]
+        \centering
+        \includegraphics[width=\csf@width]{#1}
+        \caption{\csf@caption\space\csflink{#1}}
+        \ifx\csf@label\empty\else\label{\csf@label}\fi
+        %
+        % Embed invisible metadata for extraction tools
+        \CSFMetadata{%
+            artifact={#1},%
+            step={\csf@step},%
+            script={\csf@script},%
+            line={\csf@line},%
+            project_id={\csfprojectid}%
+        }%
+    \end{figure}%
+}
+
+% Generate dashboard link
+\newcommand{\csflink}[1]{%
+    \href{\csfbaseurl/project/\csfprojectid/artifact/#1}{%
+        \textcolor{blue}{\small [🔗 Computational provenance]}%
+    }%
+}
+
+% Invisible metadata command for tools to extract
+\newcommand{\CSFMetadata}[1]{%
+    \ifcsname pdfliteral\endcsname
+        % pdfTeX
+        \pdfliteral{%
+            % CSF-METADATA: #1
+        }%
+    \else
+        % Other engines - use a comment
+        \special{CSF-METADATA: #1}%
+    \fi
+}
+
+% Enhanced backward compatibility - \includegraphics with intelligent CSF linking
+\let\original@includegraphics\includegraphics
+
+\RenewDocumentCommand{\includegraphics}{o m}{%
+    \IfNoValueTF{#1}{%
+        \original@includegraphics{#2}%
+    }{%
+        \original@includegraphics[#1]{#2}%
+    }%
+}
+
+% Enhanced auto-link helper for generated figures
+\newcommand{\csfautolink}[1]{%
+    % Always generate link for any artifact when explicitly called
+    \space\csfgeneratelink{#1}%
+}
+
+% Generate CSF provenance link with enhanced styling
+\newcommand{\csfgeneratelink}[1]{%
+    \href{\csfbaseurl/project/\csfprojectid/artifact/#1}{%
+        \textcolor{blue}{\tiny [🔗 CSF]}%
+    }%
+}
+
+% Utility to check if string contains substring
+\makeatletter
+\newcommand{\IfSubStr}[2]{%
+    \def\@temp{#2}%
+    \expandafter\@IfSubStr\expandafter{\@temp}{#1}%
+}
+\newcommand{\@IfSubStr}[2]{%
+    \begingroup
+    \edef\@tempa{#1}%
+    \edef\@tempb{#2}%
+    \expandafter\expandafter\expandafter\@@@IfSubStr
+    \expandafter\expandafter\expandafter{\expandafter\@tempb\expandafter}\expandafter{\@tempa}%
+}
+\newcommand{\@@@IfSubStr}[2]{%
+    \in@{#2}{#1}%
+    \endgroup
+    \ifin@
+        \expandafter\@firstoftwo
+    \else
+        \expandafter\@secondoftwo
+    \fi
+}
+\makeatother
+
+% Configuration commands
+\newcommand{\csfsetproject}[1]{\def\csfprojectid{#1}}
+\newcommand{\csfseturl}[1]{\def\csfbaseurl{#1}}
+\newcommand{\csfsetcommit}[1]{\def\csfcommit{#1}}
+
+% Information commands
+\newcommand{\csfprojectinfo}{%
+    Project ID: \texttt{\csfprojectid}\\%
+    Dashboard: \url{\csfbaseurl}\\%
+    Commit: \texttt{\csfcommit}%
+}
+
+% Enable auto-linking by default
+\def\csfautolink{}
+
+\endinput

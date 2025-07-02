@@ -1,0 +1,45 @@
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}
+{"type": "value", "name": "sample_mean", "value": 24.480767413029536, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 20}
+{"type": "value", "name": "sample_std", "value": 4.518080883223148, "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 24}
+{"type": "artifact", "name": "save_experiments", "path": "data/raw/experiments.csv", "function": "save_experiments", "filepath": "/Users/alexmill/Code/composci/core/test/paper/scripts/generate_sample_data.py", "lineno": 28}

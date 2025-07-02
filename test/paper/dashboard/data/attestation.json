@@ -1,0 +1,172 @@
+{
+  "$schema": "https://composable-science.org/schemas/pipeline-attestation/v0.0.1.json",
+  "attester_did": "did:key:z7QFtQxaWV2XqZsIo8QleN74J30jbYUI7lNGBPJ4JZvAnog",
+  "timestamp": "2025-07-01T05:38:35.499261+00:00",
+  "attestation_class": "COMPUTATIONALLY_ATTESTED",
+  "attestation_type": "PIPELINE_VERIFICATION",
+  "body": {
+    "claim": "Complete pipeline verification for paper",
+    "project_metadata": {
+      "name": "paper",
+      "version": "0.0.1",
+      "authors": [
+        "TODO: Add your name <email@example.org>"
+      ],
+      "license": "MIT"
+    },
+    "pipeline_steps": [
+      {
+        "step_name": "data",
+        "command": "python3 scripts/generate_sample_data.py",
+        "input_patterns": [
+          "scripts/generate_sample_data.py"
+        ],
+        "output_patterns": [
+          "data/raw/*.csv"
+        ],
+        "resolved_artifacts": [
+          "data/raw/experiments.csv",
+          "scripts/generate_sample_data.py"
+        ],
+        "artifact_hashes": {
+          "data/raw/experiments.csv": "sha256:ae29ac79c2eb5ad1c6c26b641525f21662fae5d240e1257a5fbc6f602e738f0b",
+          "scripts/generate_sample_data.py": "sha256:629bbbf7897647358424caa9c6dcbd3f5ae18feed3e98073422198076b707606"
+        },
+        "artifact_count": 2,
+        "environment_vars": {},
+        "attestation_timestamp": "2025-07-01T05:38:35.497751+00:00"
+      },
+      {
+        "step_name": "figures",
+        "command": "python3 scripts/make_figures.py",
+        "input_patterns": [
+          "data/raw/*.csv",
+          "scripts/make_figures.py"
+        ],
+        "output_patterns": [
+          "figures/*.png"
+        ],
+        "resolved_artifacts": [
+          "data/raw/experiments.csv",
+          "figures/measurement_distribution.png",
+          "figures/temperature_measurement.png",
+          "scripts/make_figures.py"
+        ],
+        "artifact_hashes": {
+          "data/raw/experiments.csv": "sha256:ae29ac79c2eb5ad1c6c26b641525f21662fae5d240e1257a5fbc6f602e738f0b",
+          "figures/measurement_distribution.png": "sha256:4d88235e03e3f6c12876a083c9180141020841ef22709bb5cf3f44373eb83001",
+          "figures/temperature_measurement.png": "sha256:f3d713d1d72400d46f7d66c67e210ed1b9991c56cd58d8bdafd05d5ed056e9ff",
+          "scripts/make_figures.py": "sha256:19334537455612ccaef1e41e7c4f5a65865f1c278287cd4511d513f66f92b00d"
+        },
+        "artifact_count": 4,
+        "environment_vars": {},
+        "attestation_timestamp": "2025-07-01T05:38:35.498530+00:00"
+      },
+      {
+        "step_name": "paper",
+        "command": "latexmk -pdf paper.tex",
+        "input_patterns": [
+          "paper.tex",
+          "figures/*.png"
+        ],
+        "output_patterns": [
+          "paper.pdf"
+        ],
+        "resolved_artifacts": [
+          "figures/measurement_distribution.png",
+          "figures/temperature_measurement.png",
+          "paper.pdf",
+          "paper.tex"
+        ],
+        "artifact_hashes": {
+          "figures/measurement_distribution.png": "sha256:4d88235e03e3f6c12876a083c9180141020841ef22709bb5cf3f44373eb83001",
+          "figures/temperature_measurement.png": "sha256:f3d713d1d72400d46f7d66c67e210ed1b9991c56cd58d8bdafd05d5ed056e9ff",
+          "paper.pdf": "sha256:53aa14494dd58b69946d46b638d83ddbfd11eee2b6e106db7eb85b56da5aa9ff",
+          "paper.tex": "sha256:07773a291f87f711e99a63c3f8880ddbacd503eb783acbe3107fa50ffd43e232"
+        },
+        "artifact_count": 4,
+        "environment_vars": {},
+        "attestation_timestamp": "2025-07-01T05:38:35.499076+00:00"
+      }
+    ],
+    "total_artifacts": 7,
+    "total_steps": 3,
+    "artifact_summary": {
+      "total_files": 7,
+      "total_size_bytes": 400844,
+      "file_types": {
+        ".csv": 1,
+        ".py": 2,
+        ".png": 2,
+        ".pdf": 1,
+        ".tex": 1
+      }
+    },
+    "build_context": {
+      "composable_toml_hash": "sha256:00109360d660cd0274821f5277086c790be21a50694f2560f7babf7910fd23e5",
+      "git_commit": "b8a2d54c20d5f061c725519f2a539123d1ca0929",
+      "git_branch": "main",
+      "git_remote": "git@github.com:composable-science/dev.git",
+      "working_tree_clean": false,
+      "pipeline_order": [
+        "data",
+        "figures",
+        "paper"
+      ]
+    },
+    "validation": {
+      "status": "invalid",
+      "checks": [
+        {
+          "type": "attestation_inclusion",
+          "included_files": 3,
+          "total_files": 7
+        }
+      ],
+      "warnings": [],
+      "errors": [
+        "Artifact 'data/raw/experiments.csv' produced by both 'data' and 'figures'",
+        "Artifact 'figures/measurement_distribution.png' produced by both 'figures' and 'paper'",
+        "Artifact 'figures/temperature_measurement.png' produced by both 'figures' and 'paper'"
+      ]
+    },
+    "environment": {
+      "cs_version": "0.0.1",
+      "platform": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "python_version": "3.13.4"
+      },
+      "nix_environment": {
+        "kind": "nix",
+        "packages": [
+          "python313",
+          "python313Packages.pandas",
+          "python313Packages.numpy",
+          "python313Packages.matplotlib"
+        ]
+      }
+    },
+    "attestation_config": {
+      "include": [
+        "paper.pdf",
+        "figures/*.png"
+      ],
+      "exclude": [
+        "drafts/*"
+      ]
+    },
+    "reproducibility_metadata": {
+      "deterministic_hashes": true,
+      "wildcard_patterns_resolved": true,
+      "build_environment_captured": true,
+      "dependency_tracking": "complete"
+    }
+  },
+  "signature": {
+    "type": "Ed25519Signature2020",
+    "created": "2025-07-01T05:38:35.500555+00:00",
+    "verification_method": "did:key:z7QFtQxaWV2XqZsIo8QleN74J30jbYUI7lNGBPJ4JZvAnog",
+    "signature_value": "xYrttkChE8+xVO/Vxem/UaYZF+QQP8ZRoTLc25u1qfIpNES3RpnttYAF45uOLcNqCfURCIIKghwLB6XEkAZqCQ=="
+  }
+}

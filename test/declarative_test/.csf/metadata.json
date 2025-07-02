@@ -1,0 +1,60 @@
+{
+  "project": {
+    "name": "paper",
+    "version": "0.0.1",
+    "license": "MIT",
+    "authors": [
+      "TODO: Add your name <email@example.org>"
+    ]
+  },
+  "build": {
+    "open_dashboard": true,
+    "env": {
+      "kind": "nix",
+      "packages": [
+        "python313",
+        "python313Packages.pandas",
+        "python313Packages.numpy",
+        "python313Packages.matplotlib"
+      ]
+    }
+  },
+  "pipeline": {
+    "data": {
+      "name": "data",
+      "cmd": "python3 scripts/generate_sample_data.py",
+      "inputs": [
+        "scripts/generate_sample_data.py"
+      ],
+      "outputs": [
+        "data/raw/*.csv"
+      ],
+      "flake": null
+    },
+    "figures": {
+      "name": "figures",
+      "cmd": "python3 scripts/make_figures.py",
+      "inputs": [
+        "data/raw/*.csv",
+        "scripts/make_figures.py"
+      ],
+      "outputs": [
+        "figures/*.png"
+      ],
+      "flake": null
+    },
+    "paper": {
+      "name": "paper",
+      "cmd": "latexmk -pdf paper.tex",
+      "inputs": [
+        "paper.tex",
+        "figures/*.png"
+      ],
+      "outputs": [
+        "paper.pdf"
+      ],
+      "flake": null
+    }
+  },
+  "discovered_artifacts": []
+}

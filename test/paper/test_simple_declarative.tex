@@ -1,0 +1,20 @@
+\documentclass{article}
+\usepackage{../../templates/composable}
+
+\title{CSF Declarative Test}
+\author{Test}
+
+\begin{document}
+\maketitle
+
+% CSF-STAT: name=test_correlation, type=correlation
+Test correlation: \csfstatlink{test_correlation}{float,round2}
+
+% CSF-COMPUTE: name=test_mean, expr="np.mean(data)"
+Test mean: \csfstatlink{test_mean}{float,round1}
+
+% This should work in plain LaTeX by showing the format specifier
+% In CSTeX, it would show actual computed values
+
+Plain text works fine.
+\end{document}

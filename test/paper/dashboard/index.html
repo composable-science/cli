@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSF Enhanced Dashboard - paper</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    <style>
+
+        /* Enhanced Dashboard Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .enhanced-dashboard {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .project-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+        }
+
+        .project-meta {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px 400px;
+            gap: 1px;
+            background: #e2e8f0;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pipeline-pane, .explorer-pane, .content-pane {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            padding: 16px 20px 12px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafafa;
+        }
+
+        .mermaid {
+            padding: 20px;
+            flex: 1;
+            overflow: auto;
+        }
+
+        .pipeline-status {
+            border-top: 1px solid #f1f5f9;
+            padding: 16px 20px;
+            background: #fafafa;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .step-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .step-item.selected {
+            background-color: #e0f2fe;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-right: 8px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .status-up-to-date {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+
+        .status-stale {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-failed {
+            background-color: #fecaca;
+            color: #dc2626;
+        }
+
+        .explorer-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            gap: 8px;
+        }
+
+        #explorer-search {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        #refresh-tree {
+            padding: 6px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .file-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .tree-node {
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 13px;
+            user-select: none;
+        }
+
+        .tree-node:hover {
+            background-color: #f8fafc;
+        }
+
+        .tree-node.selected {
+            background-color: #e0f2fe;
+        }
+
+        .tree-icon {
+            margin-right: 6px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .tree-children {
+            margin-left: 16px;
+            border-left: 1px dotted #d1d5db;
+            padding-left: 8px;
+        }
+
+        .content-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafafa;
+        }
+
+        #selected-file {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .content-actions button {
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            background: white;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .content-viewer {
+            flex: 1;
+            overflow: auto;
+            background: #fafafa;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        #monaco-editor {
+            height: 100%;
+            width: 100%;
+        }
+
+        .image-viewer {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .image-viewer img {
+            max-width: 100%;
+            max-height: 400px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        .file-metadata {
+            border-top: 1px solid #f1f5f9;
+            padding: 12px 16px;
+            background: #fafafa;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .metadata-item {
+            margin-bottom: 4px;
+        }
+
+        /* Node type styling for Mermaid */
+        .node-script {
+            fill: #2E3192 !important;
+            stroke: #1e40af !important;
+        }
+
+        .node-data-static {
+            fill: #6B7280 !important;
+            stroke: #4b5563 !important;
+        }
+
+        .node-data-derived {
+            fill: #10B981 !important;
+            stroke: #059669 !important;
+        }
+
+        .node-step {
+            fill: #FFC107 !important;
+            stroke: #d97706 !important;
+        }
+
+        .node-document {
+            fill: #8B5CF6 !important;
+            stroke: #7c3aed !important;
+        }
+    
+    </style>
+</head>
+<body>
+    <div class="enhanced-dashboard">
+        <div class="header">
+            <div class="project-title">paper</div>
+            <div class="project-meta">Enhanced CSF Dashboard • Interactive Pipeline Explorer</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Pipeline Overview Pane -->
+            <div class="pipeline-pane">
+                <div class="section-title">Pipeline Overview</div>
+                <div class="mermaid" id="pipeline-diagram">
+graph TD
+    step_0["data\npython3 scripts/generate_..."]
+    step_1["figures\npython3 scripts/make_figu..."]
+    step_2["paper\ncstex-compile paper.tex"]
+    file_0([data/raw/*.csv])
+    step_0 --> file_0
+    file_0 --> step_1
+    file_1([figures/*.png])
+    step_1 --> file_1
+    file_1 --> step_2
+    file_2([paper.pdf])
+    step_2 --> file_2
+    file_3([paper.tex])
+    file_3 --> step_2
+    file_4([scripts/generate_sample_data.py])
+    file_4 --> step_0
+    file_5([scripts/make_figures.py])
+    file_5 --> step_1
+
+    classDef stepNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef fileNode fill:#f3e5f5,stroke:#4a148c,stroke-width:1px
+    class step_0 stepNode
+    class step_1 stepNode
+    class step_2 stepNode
+    class file_0 fileNode
+    class file_1 fileNode
+    class file_2 fileNode
+    class file_3 fileNode
+    class file_4 fileNode
+    class file_5 fileNode
+                </div>
+                <div class="pipeline-status">
+                    <div class="pipeline-steps">        <div class="step-item" data-step="data">
+            <span class="status-badge status-up-to-date">Up To Date</span>
+            <span class="step-name">data</span>
+        </div>
+        <div class="step-item" data-step="figures">
+            <span class="status-badge status-up-to-date">Up To Date</span>
+            <span class="step-name">figures</span>
+        </div>
+        <div class="step-item" data-step="paper">
+            <span class="status-badge status-up-to-date">Up To Date</span>
+            <span class="step-name">paper</span>
+        </div>
+</div>
+                </div>
+            </div>
+
+            <!-- Explorer Tree Pane -->
+            <div class="explorer-pane">
+                <div class="section-title">Project Explorer</div>
+                <div class="explorer-toolbar">
+                    <input type="text" id="explorer-search" placeholder="Search files..." />
+                    <button id="refresh-tree">🔄</button>
+                </div>
+                <div id="file-tree" class="file-tree">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Content Viewer Pane -->
+            <div class="content-pane">
+                <div class="section-title">Content Viewer</div>
+                <div class="content-toolbar">
+                    <span id="selected-file">Select a file to view</span>
+                    <div class="content-actions">
+                        <button id="copy-path">📋 Copy Path</button>
+                        <button id="view-attestation">🔒 Attestation</button>
+                    </div>
+                </div>
+                <div id="content-viewer" class="content-viewer">
+                    <div class="empty-state">
+                        <div class="empty-icon">📁</div>
+                        <div>Click on a pipeline step or file to explore</div>
+                    </div>
+                </div>
+                <div id="file-metadata" class="file-metadata"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        // Enhanced Dashboard JavaScript
+        class EnhancedDashboard {
+            constructor() {
+                this.selectedNode = null;
+                this.selectedFile = null;
+                this.fileTree = null;
+                this.monacoEditor = null;
+                this.init();
+            }
+
+            async init() {
+                // Initialize Mermaid
+                mermaid.initialize({ 
+                    startOnLoad: true,
+                    theme: 'default',
+                    flowchart: {
+                        useMaxWidth: true
+                    }
+                });
+
+                // Load file tree data
+                await this.loadFileTree();
+                
+                // Set up event listeners
+                this.setupEventListeners();
+                
+                // Initialize Monaco Editor
+                this.initMonacoEditor();
+            }
+
+            async loadFileTree() {
+                try {
+                    const response = await fetch('./data/files.json');
+                    this.fileTree = await response.json();
+                    this.renderFileTree();
+                } catch (error) {
+                    console.warn('Could not load file tree data:', error);
+                    this.renderStaticFileTree();
+                }
+            }
+
+            renderFileTree() {
+                const treeContainer = document.getElementById('file-tree');
+                if (!this.fileTree) return;
+
+                treeContainer.innerHTML = this.renderTreeNode(this.fileTree, '');
+            }
+
+            renderStaticFileTree() {
+                // Fallback static file tree
+                const treeContainer = document.getElementById('file-tree');
+                treeContainer.innerHTML = `
+                    <div class="tree-node" data-path="scripts/">
+                        <span class="tree-icon">📁</span>
+                        scripts/
+                    </div>
+                    <div class="tree-children">
+                        <div class="tree-node" data-path="scripts/make_figures.py">
+                            <span class="tree-icon">🐍</span>
+                            make_figures.py
+                        </div>
+                        <div class="tree-node" data-path="scripts/generate_sample_data.py">
+                            <span class="tree-icon">🐍</span>
+                            generate_sample_data.py
+                        </div>
+                    </div>
+                    <div class="tree-node" data-path="data/">
+                        <span class="tree-icon">📁</span>
+                        data/
+                    </div>
+                    <div class="tree-children">
+                        <div class="tree-node" data-path="data/raw/">
+                            <span class="tree-icon">📁</span>
+                            raw/
+                        </div>
+                    </div>
+                    <div class="tree-node" data-path="figures/">
+                        <span class="tree-icon">📁</span>
+                        figures/
+                    </div>
+                    <div class="tree-children">
+                        <div class="tree-node" data-path="figures/temperature_measurement.png">
+                            <span class="tree-icon">🖼️</span>
+                            temperature_measurement.png
+                        </div>
+                        <div class="tree-node" data-path="figures/measurement_distribution.png">
+                            <span class="tree-icon">🖼️</span>
+                            measurement_distribution.png
+                        </div>
+                    </div>
+                    <div class="tree-node" data-path="paper.tex">
+                        <span class="tree-icon">📄</span>
+                        paper.tex
+                    </div>
+                `;
+            }
+
+            renderTreeNode(node, path) {
+                let html = '';
+                if (node.type === 'directory') {
+                    html += `<div class="tree-node" data-path="${path}${node.name}/">`;
+                    html += `<span class="tree-icon">📁</span>`;
+                    html += `${node.name}/`;
+                    html += `</div>`;
+                    
+                    if (node.children && node.children.length > 0) {
+                        html += `<div class="tree-children">`;
+                        for (const child of node.children) {
+                            html += this.renderTreeNode(child, `${path}${node.name}/`);
+                        }
+                        html += `</div>`;
+                    }
+                } else {
+                    const icon = this.getFileIcon(node.name);
+                    html += `<div class="tree-node" data-path="${path}${node.name}">`;
+                    html += `<span class="tree-icon">${icon}</span>`;
+                    html += `${node.name}`;
+                    html += `</div>`;
+                }
+                return html;
+            }
+
+            getFileIcon(filename) {
+                const ext = filename.split('.').pop().toLowerCase();
+                const icons = {
+                    'py': '🐍',
+                    'js': '📜',
+                    'tex': '📄',
+                    'pdf': '📕',
+                    'png': '🖼️',
+                    'jpg': '🖼️',
+                    'jpeg': '🖼️',
+                    'csv': '📊',
+                    'json': '📋',
+                    'md': '📝',
+                    'txt': '📝'
+                };
+                return icons[ext] || '📄';
+            }
+
+            setupEventListeners() {
+                // Pipeline step clicks
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('step-item')) {
+                        this.selectPipelineStep(e.target);
+                    }
+                });
+
+                // File tree clicks
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('.tree-node')) {
+                        const node = e.target.closest('.tree-node');
+                        this.selectFile(node.dataset.path);
+                    }
+                });
+
+                // Toolbar actions
+                document.getElementById('copy-path')?.addEventListener('click', () => {
+                    if (this.selectedFile) {
+                        navigator.clipboard.writeText(this.selectedFile);
+                    }
+                });
+
+                document.getElementById('refresh-tree')?.addEventListener('click', () => {
+                    this.loadFileTree();
+                });
+
+                // Search
+                document.getElementById('explorer-search')?.addEventListener('input', (e) => {
+                    this.filterFileTree(e.target.value);
+                });
+            }
+
+            selectPipelineStep(stepElement) {
+                // Remove previous selection
+                document.querySelectorAll('.step-item').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                stepElement.classList.add('selected');
+                
+                const stepName = stepElement.querySelector('.step-name')?.textContent;
+                if (stepName) {
+                    // Load files for this step
+                    this.loadStepFiles(stepName);
+                }
+            }
+
+            loadStepFiles(stepName) {
+                // Map step names to directories
+                const stepDirs = {
+                    'data': 'data/',
+                    'figures': 'figures/',
+                    'paper': './' // root for paper files
+                };
+                
+                const targetDir = stepDirs[stepName];
+                if (targetDir) {
+                    // Highlight relevant files in tree
+                    this.highlightTreePath(targetDir);
+                }
+            }
+
+            highlightTreePath(path) {
+                document.querySelectorAll('.tree-node').forEach(node => {
+                    node.classList.remove('selected');
+                    if (node.dataset.path.startsWith(path)) {
+                        node.classList.add('selected');
+                    }
+                });
+            }
+
+            async selectFile(path) {
+                this.selectedFile = path;
+                
+                // Update toolbar
+                document.getElementById('selected-file').textContent = path;
+                
+                // Clear previous selection
+                document.querySelectorAll('.tree-node').forEach(node => {
+                    node.classList.remove('selected');
+                });
+                
+                // Select current file
+                const node = document.querySelector(`[data-path="${path}"]`);
+                if (node) {
+                    node.classList.add('selected');
+                }
+                
+                // Load file content
+                await this.loadFileContent(path);
+                
+                // Update metadata
+                this.updateFileMetadata(path);
+            }
+
+            async loadFileContent(path) {
+                const viewer = document.getElementById('content-viewer');
+                
+                try {
+                    // Check if it's an image
+                    if (path.match(/\\.(png|jpg|jpeg|gif|svg)$/i)) {
+                        viewer.innerHTML = `
+                            <div class="image-viewer">
+                                <img src="../${path}" alt="${path}" />
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Try to load file content
+                    const response = await fetch(`../api/content?path=${encodeURIComponent(path)}`);
+                    if (response.ok) {
+                        const content = await response.text();
+                        this.displayCodeContent(content, path);
+                    } else {
+                        this.displayErrorMessage('Could not load file content');
+                    }
+                } catch (error) {
+                    console.warn('Could not load file:', error);
+                    this.displaySampleContent(path);
+                }
+            }
+
+            displayCodeContent(content, path) {
+                const language = this.getLanguageFromPath(path);
+                
+                if (this.monacoEditor) {
+                    const model = monaco.editor.createModel(content, language);
+                    this.monacoEditor.setModel(model);
+                    document.getElementById('content-viewer').innerHTML = '<div id="monaco-editor"></div>';
+                    this.monacoEditor = monaco.editor.create(
+                        document.getElementById('monaco-editor'),
+                        {
+                            model: model,
+                            theme: 'vs',
+                            readOnly: true,
+                            minimap: { enabled: false },
+                            scrollBeyondLastLine: false
+                        }
+                    );
+                }
+            }
+
+            displaySampleContent(path) {
+                // Display sample content based on file type
+                const viewer = document.getElementById('content-viewer');
+                const ext = path.split('.').pop().toLowerCase();
+                
+                let sampleContent = '';
+                if (ext === 'py' && path.includes('make_figures')) {
+                    sampleContent = `#!/usr/bin/env python3
+"""Generate figures for LaTeX paper"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from pathlib import Path
+
+def main():
+    # Ensure figures directory exists
+    Path("figures").mkdir(exist_ok=True)
+    
+    # Load data
+    data_files = list(Path("data/raw").glob("*.csv"))
+    if not data_files:
+        print("No CSV files found in data/raw/")
+        return
+    
+    df = pd.read_csv(data_files[0])
+    
+    # Generate scatter plot
+    plt.figure(figsize=(8, 6))
+    plt.scatter(df['temperature'], df['measurement'], alpha=0.6, s=30)
+    plt.xlabel('Temperature (°C)')
+    plt.ylabel('Measurement Value')
+    plt.title('Temperature vs Measurement')
+    plt.grid(True, alpha=0.3)
+    plt.savefig('figures/temperature_measurement.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+if __name__ == "__main__":
+    main()`;
+                } else if (ext === 'tex') {
+                    sampleContent = `\\documentclass{article}
+\\usepackage{graphicx}
+\\usepackage{amsmath}
+
+\\title{CSF Paper Template}
+\\author{Your Name}
+\\date{\\today}
+
+\\begin{document}
+
+\\maketitle
+
+\\section{Introduction}
+
+This is a sample paper created with the Composable Science Framework.
+All computational steps are reproducible and verifiable.
+
+\\section{Results}
+
+\\begin{figure}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{figures/temperature_measurement.png}
+\\caption{Temperature vs Measurement Analysis}
+\\label{fig:temperature}
+\\end{figure}
+
+Figure \\ref{fig:temperature} shows the relationship between temperature and measurements.
+
+\\end{document}`;
+                } else {
+                    sampleContent = `# ${path}
+
+Content preview not available.
+This is a placeholder showing the file structure.`;
+                }
+                
+                viewer.innerHTML = `<pre style="padding: 20px; margin: 0; white-space: pre-wrap; font-family: 'Monaco', 'Courier New', monospace; font-size: 12px; line-height: 1.4;">${sampleContent}</pre>`;
+            }
+
+            displayErrorMessage(message) {
+                const viewer = document.getElementById('content-viewer');
+                viewer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <div>${message}</div>
+                    </div>
+                `;
+            }
+
+            getLanguageFromPath(path) {
+                const ext = path.split('.').pop().toLowerCase();
+                const languages = {
+                    'py': 'python',
+                    'js': 'javascript',
+                    'ts': 'typescript',
+                    'tex': 'latex',
+                    'json': 'json',
+                    'md': 'markdown',
+                    'txt': 'plaintext',
+                    'csv': 'csv'
+                };
+                return languages[ext] || 'plaintext';
+            }
+
+            initMonacoEditor() {
+                // Initialize Monaco Editor when first needed
+                if (typeof monaco !== 'undefined') {
+                    this.monacoReady = true;
+                } else {
+                    // Fallback - Monaco not available
+                    this.monacoReady = false;
+                }
+            }
+
+            updateFileMetadata(path) {
+                const metadata = document.getElementById('file-metadata');
+                // This would normally fetch real file metadata
+                metadata.innerHTML = `
+                    <div class="metadata-item"><strong>Path:</strong> ${path}</div>
+                    <div class="metadata-item"><strong>Type:</strong> ${this.getFileType(path)}</div>
+                    <div class="metadata-item"><strong>Modified:</strong> Recently</div>
+                `;
+            }
+
+            getFileType(path) {
+                const ext = path.split('.').pop().toLowerCase();
+                const types = {
+                    'py': 'Python Script',
+                    'tex': 'LaTeX Document',
+                    'png': 'PNG Image',
+                    'csv': 'CSV Data',
+                    'json': 'JSON Data'
+                };
+                return types[ext] || 'File';
+            }
+
+            filterFileTree(query) {
+                const nodes = document.querySelectorAll('.tree-node');
+                nodes.forEach(node => {
+                    const text = node.textContent.toLowerCase();
+                    const matches = text.includes(query.toLowerCase());
+                    node.style.display = matches || !query ? 'flex' : 'none';
+                });
+            }
+        }
+
+        // Initialize enhanced dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new EnhancedDashboard();
+        });
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://composable-science.org/schemas/attestation/v0.0.1.json",
+  "attester_did": "did:key:z7QFtQxaWV2XqZsIo8QleN74J30jbYUI7lNGBPJ4JZvAnog",
+  "timestamp": "2025-07-01T05:31:48.223490+00:00",
+  "attestation_class": "COMPUTATIONALLY_ATTESTED",
+  "body": {
+    "pipeline_step": "paper",
+    "command": "latexmk -pdf paper.tex",
+    "artifact_hashes": {
+      "paper.pdf": "sha256:53aa14494dd58b69946d46b638d83ddbfd11eee2b6e106db7eb85b56da5aa9ff"
+    },
+    "input_patterns": [
+      "paper.tex",
+      "figures/*.png"
+    ],
+    "output_patterns": [
+      "paper.pdf"
+    ],
+    "build_context": {
+      "composable_toml_hash": "sha256:00109360d660cd0274821f5277086c790be21a50694f2560f7babf7910fd23e5",
+      "git_commit": "b8a2d54c20d5f061c725519f2a539123d1ca0929",
+      "git_branch": "main",
+      "git_remote": "git@github.com:composable-science/dev.git",
+      "working_tree_clean": false
+    },
+    "environment": {
+      "cs_version": "0.0.1",
+      "platform": {
+        "system": "Darwin",
+        "machine": "arm64",
+        "python_version": "3.13.4"
+      }
+    }
+  },
+  "signature": {
+    "type": "Ed25519Signature2020",
+    "created": "2025-07-01T05:31:48.225027+00:00",
+    "verification_method": "did:key:z7QFtQxaWV2XqZsIo8QleN74J30jbYUI7lNGBPJ4JZvAnog",
+    "signature_value": "TFF83QGDpkYN/NWC+a84+xda6V5E55DJzTPPAk8sJLI4Jl05K2Yi2mfKHxRi4O9zcdoX/k4EjOg/1CWnl76tDw=="
+  }
+}
